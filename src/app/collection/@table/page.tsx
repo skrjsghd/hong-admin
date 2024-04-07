@@ -1,4 +1,5 @@
-import { getTableDetail } from "@/app/actions";
+import { getColumnInformation, getTableDetail } from "@/app/actions";
+import { AddRowButton } from "@/components/_collection/add-row-button";
 import { CollectionTable } from "@/components/collection-table";
 
 export default async function CollectionTablePage({
@@ -6,10 +7,19 @@ export default async function CollectionTablePage({
 }: {
   searchParams: { t: string | undefined };
 }) {
-  const tableDetail = await getTableDetail(searchParams.t);
+  const [tableDetail, columnInformation] = await Promise.all([
+    getTableDetail(searchParams.t),
+    getColumnInformation(searchParams.t),
+  ]);
 
-  if (!tableDetail) return null;
+  if (!tableDetail || !columnInformation) return null;
   return (
-    <CollectionTable fields={tableDetail.fields} rows={tableDetail.rows} />
+    <div className="flex flex-col">
+      <AddRowButton columnInformation={columnInformation} />
+      <CollectionTable
+        columnInformation={columnInformation}
+        rows={tableDetail.rows}
+      />
+    </div>
   );
 }

@@ -1,17 +1,18 @@
 "use client";
 
-import { FieldDef } from "pg";
 import { CollectionTableRow } from "./collection-table-row";
 import { useRef, useState } from "react";
 import { updateRow } from "@/app/actions";
 import { useSearchParams } from "next/navigation";
+import { Drawer, DrawerBody, DrawerFooter } from "./ui/drawer";
+import { ColumnInformation } from "@/lib/types";
 
 type CollectionTableProps = {
-  fields: FieldDef[];
+  columnInformation: ColumnInformation[];
   rows: Record<string, any>[];
 };
 
-function CollectionTable({ fields, rows }: CollectionTableProps) {
+function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
   const searchParams = useSearchParams();
   const tableName = searchParams.get("t");
   const [isOpen, setIsOpen] = useState(false);
@@ -50,12 +51,12 @@ function CollectionTable({ fields, rows }: CollectionTableProps) {
         <table className="w-full divide-y">
           <thead>
             <tr className="divide-x">
-              {fields.map((v) => {
-                return <th key={v.name}>{v.name}</th>;
+              {columnInformation.map(({ column_name }) => {
+                return <th key={column_name}>{column_name}</th>;
               })}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y">
             {rows.map((row) => {
               return (
                 <CollectionTableRow
@@ -68,40 +69,28 @@ function CollectionTable({ fields, rows }: CollectionTableProps) {
           </tbody>
         </table>
       </div>
-      {isOpen && (
-        <div className="fixed left-0 top-0 flex h-dvh w-dvw flex-row-reverse">
-          <div className="flex h-full w-1/3 flex-col justify-between bg-white p-6">
-            <div className="flex flex-col gap-6">
-              {fields.map((v, i) => {
-                const { name, format } = v;
-                return (
-                  <div key={name} className="space-y-1">
-                    <div className="text-xs">{JSON.stringify(v)}</div>
-                    <label htmlFor={name}>{name}</label>
-                    <input
-                      key={name}
-                      type="text"
-                      name={name}
-                      value={currentRow[name]}
-                      onChange={handleRowChange}
-                    />
-                  </div>
-                );
-              })}
+      <Drawer isOpen={isOpen} onClickBackdrop={() => setIsOpen(false)}>
+        <DrawerBody>
+          {columnInformation.map(({ column_name }) => (
+            <div key={column_name} className="space-y-1">
+              <label htmlFor={column_name}>{column_name}</label>
+              <input
+                key={column_name}
+                type="text"
+                name={column_name}
+                value={currentRow[column_name]}
+                onChange={handleRowChange}
+              />
             </div>
-            <div className="flex items-center gap-6 self-end">
-              <button onClick={handleCloseModal}>cancel</button>
-              <button data-type="primary" onClick={handleSaveRow}>
-                Save
-              </button>
-            </div>
-          </div>
-          <div
-            className="absolute left-0 top-0 -z-10 h-full w-full bg-black/80"
-            onClick={() => setIsOpen(false)}
-          ></div>
-        </div>
-      )}
+          ))}
+        </DrawerBody>
+        <DrawerFooter>
+          <button onClick={handleCloseModal}>cancel</button>
+          <button data-type="primary" onClick={handleSaveRow}>
+            Save
+          </button>
+        </DrawerFooter>
+      </Drawer>
     </>
   );
 }

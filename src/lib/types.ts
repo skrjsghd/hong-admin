@@ -13,7 +13,7 @@ export type TableInformation = {
   commit_action: string;
 };
 
-export type ColumnInformation = {
+export type InformationSchemaColumns = {
   table_catalog: string;
   table_schema: string;
   table_name: string;
@@ -59,6 +59,30 @@ export type ColumnInformation = {
   generation_expression: string | null;
   is_updatable: "YES" | "NO";
 };
+
+export type ColumnInformation = {
+  typname: string;
+  typcategory:
+    | "A" // Array
+    | "B" // Boolean
+    | "C" // Composite
+    | "D" // Date/Time
+    | "E" // Enum
+    | "G" // Geometric
+    | "I" // Network Address
+    | "N" // Numeric
+    | "P" // Pseudo
+    | "R" // Range
+    | "S" // String
+    | "T" // Timespan
+    | "U" // User-defined
+    | "V" // Bit String
+    | "X" // Unknown
+    | "Z";
+} & Pick<
+  InformationSchemaColumns,
+  "column_name" | "is_nullable" | "column_default"
+>;
 
 // {
 //   "BOOL": 16,

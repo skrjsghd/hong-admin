@@ -58,8 +58,12 @@ export async function getColumnInformation(tableName: string | undefined) {
     const pool = new Pool({
       connectionString,
     });
-    const res = await pool.query<ColumnInformation>(
-      "SELECT * FROM information_schema.columns WHERE table_name = $1;",
+    const res = await pool.query(
+      `SELECT t1.column_name, t2.typname, t2.typcategory, t1.is_nullable, t1.column_default
+      FROM information_schema.columns AS t1 
+      LEFT JOIN pg_catalog.pg_type AS t2 ON t1.udt_name = t2.typname 
+      WHERE table_name = $1;
+      `,
       [tableName],
     );
     await pool.end();
@@ -89,6 +93,29 @@ export async function getTableDetail(tableName?: string | null) {
   } catch (e) {
     return null;
   }
+}
+
+export async function addRow(tableName: string, data: Record<string, any>) {
+  try {
+    const pool = new Pool({
+      connectionString,
+    });
+
+    const keys = Object.keys(data);
+    const values = Object.values(data);
+
+    const query = `
+      INSERT INTO "${tableName}" (${keys.join(", ")})
+      VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})
+    `;
+
+    await pool.query(query, values);
+    await pool.end();
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+  revalidatePath("/collection");
 }
 
 export async function updateRow(

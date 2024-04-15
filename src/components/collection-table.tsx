@@ -6,6 +6,7 @@ import { updateRow } from "@/app/actions";
 import { useSearchParams } from "next/navigation";
 import { Drawer, DrawerBody, DrawerFooter } from "./ui/drawer";
 import { ColumnInformation } from "@/lib/types";
+import { InputField } from "./_collection/input-field";
 
 type CollectionTableProps = {
   columnInformation: ColumnInformation[];
@@ -37,10 +38,17 @@ function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
   };
 
   const handleSaveRow = async () => {
+    const primaryColumn = columnInformation.find(
+      (v) => v.constraint_type === "PRIMARY KEY",
+    );
     if (!tableName) return;
-    await updateRow(tableName, {
-      prev: prevRow.current,
-      current: currentRow,
+    await updateRow({
+      tableName,
+      where: {
+        [primaryColumn?.column_name || ""]:
+          prevRow.current[primaryColumn?.column_name || ""],
+      },
+      data: currentRow,
     });
     handleCloseModal();
   };
@@ -62,7 +70,8 @@ function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
                 <CollectionTableRow
                   key={crypto.randomUUID()}
                   data={row}
-                  onClick={() => handleClickRow(row)}
+                  columnInformation={columnInformation}
+                  onClick={(newRow) => handleClickRow(newRow)}
                 />
               );
             })}
@@ -71,17 +80,14 @@ function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
       </div>
       <Drawer isOpen={isOpen} onClickBackdrop={() => setIsOpen(false)}>
         <DrawerBody>
-          {columnInformation.map(({ column_name }) => (
-            <div key={column_name} className="space-y-1">
-              <label htmlFor={column_name}>{column_name}</label>
-              <input
-                key={column_name}
-                type="text"
-                name={column_name}
-                value={currentRow[column_name]}
-                onChange={handleRowChange}
-              />
-            </div>
+          {columnInformation.map((v) => (
+            <InputField
+              key={v.column_name}
+              name={v.column_name}
+              columnInformation={v}
+              value={currentRow[v.column_name] || ""}
+              onChange={handleRowChange}
+            />
           ))}
         </DrawerBody>
         <DrawerFooter>

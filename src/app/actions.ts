@@ -3,18 +3,27 @@
 import { ColumnInformation, TableInformation } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { Pool, QueryResult } from "pg";
+import { Pool, QueryResult, QueryResultRow } from "pg";
 
 const connectionString = process.env.DATABASE_URL;
 
+export async function query<T extends QueryResultRow>(
+  query: string,
+  values?: any[],
+) {
+  const pool = new Pool({
+    connectionString,
+  });
+
+  const res = await pool.query<T>(query, values);
+  await pool.end();
+  return res;
+}
+
 export async function connectToDB() {
   try {
-    const pool = new Pool({
-      connectionString,
-    });
-
-    await pool.query("SELECT NOW()");
-    await pool.end();
+    const params = "SELECT NOW()";
+    await query(params);
   } catch (e) {
     return {
       error:
@@ -24,49 +33,43 @@ export async function connectToDB() {
   redirect("/collection");
 }
 
-export async function executeQuery(query: string) {
+export async function getTableInformation() {
   try {
-    const pool = new Pool({
-      connectionString,
-    });
-
-    const res = await pool.query(query);
-    await pool.end();
-    return JSON.parse(JSON.stringify(res));
+    const res = await query<TableInformation>(
+      "SELECT * FROM information_schema.tables WHERE table_schema='public';",
+    );
+    return res.rows;
   } catch (e) {
     return {
-      error: "Failed to execute the query. Please check the query syntax.",
+      error: "Failed to get table information.",
     };
   }
 }
 
-export async function getTableInformation() {
-  const pool = new Pool({
-    connectionString,
-  });
-
-  const res = await pool.query<TableInformation>(
-    "SELECT * FROM information_schema.tables WHERE table_schema='public';",
-  );
-  await pool.end();
-
-  return res.rows;
-}
-
 export async function getColumnInformation(tableName: string | undefined) {
   try {
-    const pool = new Pool({
-      connectionString,
-    });
-    const res = await pool.query(
-      `SELECT t1.column_name, t2.typname, t2.typcategory, t1.is_nullable, t1.column_default
-      FROM information_schema.columns AS t1 
-      LEFT JOIN pg_catalog.pg_type AS t2 ON t1.udt_name = t2.typname 
-      WHERE table_name = $1;
+    const res = await query<ColumnInformation>(
+      `
+      SELECT 
+          col.column_name,
+          col.column_default,
+          col.is_nullable,
+          cons.constraint_type,
+          typ.typname,
+          typ.typcategory
+      FROM 
+          information_schema.columns AS col
+      LEFT JOIN 
+          information_schema.key_column_usage AS kcu ON col.table_name = kcu.table_name AND col.column_name = kcu.column_name
+      LEFT JOIN 
+          pg_catalog.pg_type AS typ ON col.udt_name = typ.typname
+      LEFT JOIN 
+          information_schema.table_constraints AS cons ON kcu.constraint_name = cons.constraint_name
+      WHERE 
+          col.table_name = $1;
       `,
       [tableName],
     );
-    await pool.end();
 
     return res.rows;
   } catch (e) {
@@ -97,20 +100,15 @@ export async function getTableDetail(tableName?: string | null) {
 
 export async function addRow(tableName: string, data: Record<string, any>) {
   try {
-    const pool = new Pool({
-      connectionString,
-    });
-
     const keys = Object.keys(data);
     const values = Object.values(data);
 
-    const query = `
+    const q = `
       INSERT INTO "${tableName}" (${keys.join(", ")})
       VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})
     `;
 
-    await pool.query(query, values);
-    await pool.end();
+    await query(q, values);
   } catch (e) {
     console.log(e);
     return null;
@@ -118,35 +116,28 @@ export async function addRow(tableName: string, data: Record<string, any>) {
   revalidatePath("/collection");
 }
 
-export async function updateRow(
-  tableName: string,
-  data: {
-    prev: Record<string, string>;
-    current: Record<string, string>;
-  },
-) {
+export async function updateRow(params: {
+  tableName: string;
+  where: Record<string, any>;
+  data: Record<string, any>;
+}) {
+  const { tableName, where, data } = params;
   try {
-    const pool = new Pool({
-      connectionString,
-    });
-    const keys = Object.keys(data.current);
-    const values = Object.values(data.current);
-    const prevKeys = Object.keys(data.prev);
-    const prevValues = Object.values(data.prev);
+    const keys = Object.keys(data);
+    const values = Object.values(data);
+    const whereKeys = Object.keys(where);
+    const whereValues = Object.values(where);
 
-    const query = `
+    const q = `
       UPDATE "${tableName}"
       SET ${keys.map((k, i) => `${k} = $${i + 1}`).join(", ")}
-      WHERE ${prevKeys.map((k, i) => `${k} = $${i + keys.length + 1}`).join(" AND ")}
+      WHERE ${whereKeys.map((k, i) => `${k} = $${i + keys.length + 1}`).join(" AND ")}
     `;
-
-    await pool.query(query, [...values, ...prevValues]);
-    await pool.end();
-
-    revalidatePath("/collection");
-
-    return "success";
+    const v = [...values, ...whereValues];
+    await query(q, v);
   } catch (e) {
+    console.log(e);
     return null;
   }
+  revalidatePath("/collection");
 }

@@ -1,3 +1,10 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 export function deepCompare<T extends Record<string, any>>(
   obj1: T,
   obj2: T,

@@ -6,6 +6,7 @@ import { Drawer, DrawerBody, DrawerFooter } from "../ui/drawer";
 import { ColumnInformation, InformationSchemaColumns } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
 import { addRow } from "@/app/actions";
+import { InputField } from "./input-field";
 
 type AddRowButtonProps = {
   columnInformation: ColumnInformation[];
@@ -20,10 +21,27 @@ function AddRowButton({ columnInformation }: AddRowButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [payload, setPayload] = useState(initialPayload);
 
+  const validatedPayload = () => {
+    const info = columnInformation.map((v) => {
+      const { column_name } = v;
+      const value = payload[column_name];
+
+      if (value) {
+        return { [column_name]: value };
+      } else {
+        if (v.is_nullable === "YES") return;
+        if (v.column_default) return;
+        return { [column_name]: "" };
+      }
+    });
+    const result = Object.assign({}, ...info);
+    return result;
+  };
+
   const handleSubmit = async () => {
     const tableName = searchParams.get("t");
     if (!tableName) return;
-    const result = await addRow(tableName, payload);
+    const result = await addRow(tableName, validatedPayload());
     setPayload(initialPayload);
     setIsOpen(false);
   };
@@ -38,39 +56,19 @@ function AddRowButton({ columnInformation }: AddRowButtonProps) {
         <PlusIcon className="size-5" />
         Add Row
       </button>
-      <Drawer isOpen={isOpen} onClickBackdrop={() => setIsOpen(false)}>
+      <Drawer isOpen={isOpen}>
         <DrawerBody>
-          {JSON.stringify(payload)}
-          {columnInformation.map((col) => {
-            const {
-              column_name,
-              typname,
-              typcategory,
-              is_nullable,
-              column_default,
-            } = col;
+          {JSON.stringify(validatedPayload())}
+          {columnInformation.map((v) => {
             return (
-              <label key={column_name} className="grid grid-cols-5">
-                <div className="col-span-1">
-                  <div>{column_name}</div>
-                  <div>{typname}</div>
-                </div>
-                <input
-                  className="col-span-4"
-                  type={typcategory === "N" ? "number" : "text"}
-                  placeholder={
-                    column_default
-                      ? column_default
-                      : is_nullable === "YES"
-                        ? "NULL"
-                        : ""
-                  }
-                  value={payload[column_name]}
-                  onChange={(e) => {
-                    setPayload({ ...payload, [column_name]: e.target.value });
-                  }}
-                />
-              </label>
+              <InputField
+                key={v.column_name}
+                columnInformation={v}
+                value={payload[v.column_name]}
+                onChange={(e) => {
+                  setPayload({ ...payload, [v.column_name]: e.target.value });
+                }}
+              />
             );
           })}
         </DrawerBody>

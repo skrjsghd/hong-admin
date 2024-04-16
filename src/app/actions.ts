@@ -40,9 +40,7 @@ export async function getTableInformation() {
     );
     return res.rows;
   } catch (e) {
-    return {
-      error: "Failed to get table information.",
-    };
+    return [];
   }
 }
 

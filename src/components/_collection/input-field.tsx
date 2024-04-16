@@ -1,6 +1,7 @@
 import { ColumnInformation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { HTMLInputTypeAttribute } from "react";
+import { Input, Label } from "../ui";
 
 type InputFieldProps = {
   columnInformation: ColumnInformation;
@@ -31,19 +32,23 @@ function InputField({
       : "";
 
   const attr: React.InputHTMLAttributes<HTMLInputElement> = {
+    id: column_name,
     type: getAttrType(),
     placeholder,
+    className: cn("col-span-4", className),
     ...props,
   };
 
   return (
-    <label className="grid grid-cols-5">
-      <div className="col-span-1">
-        <div>{column_name}</div>
-        <div>{typname}</div>
-      </div>
-      <input className={cn("col-span-4", className)} {...attr} />
-    </label>
+    <div className="grid grid-cols-5 gap-2">
+      <Label
+        htmlFor={column_name}
+        title={column_name}
+        description={typname}
+        className="col-span-1"
+      />
+      <Input {...attr} />
+    </div>
   );
 }
 

@@ -1,30 +1,42 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-family:
-      "Pretendard Variable",
-      Pretendard,
-      -apple-system,
-      BlinkMacSystemFont,
-      system-ui,
-      Roboto,
-      "Helvetica Neue",
-      "Segoe UI",
-      "Apple SD Gothic Neo",
-      "Noto Sans KR",
-      "Malgun Gothic",
-      "Apple Color Emoji",
-      "Segoe UI Emoji",
-      "Segoe UI Symbol",
-      sans-serif;
+  :root {
+    --background: theme("colors.white");
+    --foreground: theme("colors.m.900");
+    --primary: theme("colors.p.700");
+    --primary-foreground: theme("colors.p.50");
+    --muted: theme("colors.m.100");
+    --muted-foreground: theme("colors.m.500");
+    --border: theme("colors.m.200");
+    --ring: theme("colors.p.500");
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: theme("colors.m.900");
+    --foreground: theme("colors.m.50");
+    --primary: theme("colors.p.50");
+    --primary-foreground: theme("colors.p.700");
+    --muted: theme("colors.m.800");
+    --muted-foreground: theme("colors.m.400");
+    --border: theme("colors.m.600");
+    --ring: theme("colors.p.500");
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
   body {
-    @apply bg-white text-zinc-900;
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 

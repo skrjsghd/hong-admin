@@ -1,12 +1,18 @@
 "use client";
 
-import { PlusIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
-import { Drawer, DrawerBody, DrawerFooter } from "../ui/drawer";
 import { ColumnInformation, InformationSchemaColumns } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
 import { addRow } from "@/app/actions";
 import { InputField } from "./input-field";
+import {
+  Button,
+  Icon,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTrigger,
+} from "../ui";
 
 type AddRowButtonProps = {
   columnInformation: ColumnInformation[];
@@ -47,17 +53,15 @@ function AddRowButton({ columnInformation }: AddRowButtonProps) {
   };
 
   return (
-    <>
-      <button
-        data-type="primary"
-        className="mb-4 self-end"
-        onClick={() => setIsOpen(true)}
-      >
-        <PlusIcon className="size-5" />
-        Add Row
-      </button>
-      <Drawer isOpen={isOpen}>
-        <DrawerBody>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger>
+        <Button>
+          <Icon name="PlusIcon" className="h-4 w-4" />
+          Add Row
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <div className="flex flex-col gap-6">
           {JSON.stringify(validatedPayload())}
           {columnInformation.map((v) => {
             return (
@@ -71,17 +75,19 @@ function AddRowButton({ columnInformation }: AddRowButtonProps) {
               />
             );
           })}
-        </DrawerBody>
-        <DrawerFooter>
-          <button data-type="outline" onClick={() => setIsOpen(false)}>
-            cancel
-          </button>
-          <button data-type="primary" onClick={handleSubmit}>
-            Add
-          </button>
-        </DrawerFooter>
-      </Drawer>
-    </>
+          <div className="flex gap-2 self-end">
+            <SheetClose>
+              <Button size="sm" variant="outline">
+                cancel
+              </Button>
+            </SheetClose>
+            <Button size="sm" onClick={() => setIsOpen(false)}>
+              Add
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 

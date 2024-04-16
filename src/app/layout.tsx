@@ -1,5 +1,12 @@
+import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
+
+const pretendard = localFont({
+  src: "../assets/fonts/PretendardVariable.woff2",
+  display: "swap",
+  weight: "45 920",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -13,9 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>
+      <body className={pretendard.className}>
         <div>{children}</div>
-        <div id="modal" />
       </body>
     </html>
   );

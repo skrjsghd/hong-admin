@@ -1,53 +1,45 @@
 "use client";
 
 import { useState } from "react";
-import { ColumnInformation, InformationSchemaColumns } from "@/lib/types";
+import { ColumnInformation } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
 import { addRow } from "@/app/actions";
 import { InputField } from "./input-field";
-import {
-  Button,
-  Icon,
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetTrigger,
-} from "../ui";
+import { Button, Icon, Sheet, SheetContent, SheetTrigger } from "../ui";
 
 type AddRowButtonProps = {
   columnInformation: ColumnInformation[];
 };
 function AddRowButton({ columnInformation }: AddRowButtonProps) {
   const searchParams = useSearchParams();
-  const initialPayload: Record<InformationSchemaColumns["column_name"], any> =
-    Object.assign(
-      {},
-      ...columnInformation.map((col) => ({ [col.column_name]: "" })),
-    );
+  const initialPayload: Record<string, any> = columnInformation.reduce(
+    (acc, col) => ({ ...acc, [col.column_name]: "" }),
+    {},
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [payload, setPayload] = useState(initialPayload);
 
-  const validatedPayload = () => {
-    const info = columnInformation.map((v) => {
-      const { column_name } = v;
-      const value = payload[column_name];
+  const validPayload = columnInformation.reduce((acc, col) => {
+    const { column_name, is_nullable, column_default } = col;
+    const value = payload[column_name];
 
-      if (value) {
-        return { [column_name]: value };
-      } else {
-        if (v.is_nullable === "YES") return;
-        if (v.column_default) return;
-        return { [column_name]: "" };
-      }
-    });
-    const result = Object.assign({}, ...info);
-    return result;
+    if (value !== null && value !== undefined && value !== "") {
+      return { ...acc, [column_name]: value };
+    } else if (is_nullable === "YES" || column_default) {
+      return acc;
+    } else {
+      return { ...acc, [column_name]: "" };
+    }
+  }, {});
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setPayload(initialPayload);
   };
-
   const handleSubmit = async () => {
     const tableName = searchParams.get("t");
     if (!tableName) return;
-    const result = await addRow(tableName, validatedPayload());
+    const result = await addRow(tableName, validPayload);
     setPayload(initialPayload);
     setIsOpen(false);
   };
@@ -62,26 +54,23 @@ function AddRowButton({ columnInformation }: AddRowButtonProps) {
       </SheetTrigger>
       <SheetContent>
         <div className="flex flex-col gap-6">
-          {JSON.stringify(validatedPayload())}
-          {columnInformation.map((v) => {
+          {columnInformation.map((col) => {
             return (
               <InputField
-                key={v.column_name}
-                columnInformation={v}
-                value={payload[v.column_name]}
-                onChange={(e) => {
-                  setPayload({ ...payload, [v.column_name]: e.target.value });
+                key={col.column_name}
+                columnInformation={col}
+                value={payload[col.column_name]}
+                onValueChange={(v) => {
+                  setPayload({ ...payload, [col.column_name]: v });
                 }}
               />
             );
           })}
           <div className="flex gap-2 self-end">
-            <SheetClose>
-              <Button size="sm" variant="outline">
-                cancel
-              </Button>
-            </SheetClose>
-            <Button size="sm" onClick={() => setIsOpen(false)}>
+            <Button size="sm" variant="outline" onClick={handleClose}>
+              cancel
+            </Button>
+            <Button size="sm" onClick={handleSubmit}>
               Add
             </Button>
           </div>

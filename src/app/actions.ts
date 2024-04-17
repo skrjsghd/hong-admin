@@ -3,7 +3,7 @@
 import { ColumnInformation, TableInformation } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { Pool, QueryResult, QueryResultRow } from "pg";
+import { Pool, Query, QueryResult, QueryResultRow } from "pg";
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -75,7 +75,7 @@ export async function getColumnInformation(tableName: string | undefined) {
   }
 }
 
-export async function getTableDetail(tableName?: string | null) {
+export async function getTableRows(tableName?: string | null) {
   try {
     const pool = new Pool({
       connectionString,

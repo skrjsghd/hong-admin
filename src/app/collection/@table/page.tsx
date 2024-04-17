@@ -1,6 +1,6 @@
-import { getColumnInformation, getTableDetail } from "@/app/actions";
+import { getColumnInformation, getTableRows } from "@/app/actions";
 import { AddRowButton } from "@/components/_collection/add-row-button";
-import { CollectionTable } from "@/components/collection-table";
+import { CollectionTable } from "@/components/_collection/collection-table";
 
 export default async function CollectionTablePage({
   searchParams,
@@ -9,7 +9,7 @@ export default async function CollectionTablePage({
 }) {
   const tableName = searchParams.t;
   const [tableDetail, columnInformation] = await Promise.all([
-    getTableDetail(searchParams.t),
+    getTableRows(searchParams.t),
     getColumnInformation(searchParams.t),
   ]);
 

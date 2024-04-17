@@ -1,4 +1,5 @@
 import { ColumnInformation } from "@/lib/types";
+import { CollectionTableCell } from "./collection-table-cell";
 
 type CollectionTableRowProps = {
   data: Record<string, string>;
@@ -41,9 +42,7 @@ function CollectionTableRow({
       onClick={handleClick}
     >
       {Object.entries(row).map(([k, v]) => (
-        <td key={k} className="p-2">
-          {v}
-        </td>
+        <CollectionTableCell key={k} value={v} />
       ))}
     </tr>
   );

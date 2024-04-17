@@ -4,9 +4,9 @@ import { CollectionTableRow } from "./collection-table-row";
 import { useRef, useState } from "react";
 import { updateRow } from "@/app/actions";
 import { useSearchParams } from "next/navigation";
-import { Drawer, DrawerBody, DrawerFooter } from "./ui/drawer";
+import { Drawer, DrawerBody, DrawerFooter } from "../ui/drawer";
 import { ColumnInformation } from "@/lib/types";
-import { InputField } from "./_collection/input-field";
+import { InputField } from "./input-field";
 
 type CollectionTableProps = {
   columnInformation: ColumnInformation[];
@@ -17,8 +17,8 @@ function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
   const searchParams = useSearchParams();
   const tableName = searchParams.get("t");
   const [isOpen, setIsOpen] = useState(false);
-  const prevRow = useRef<Record<string, any>>({});
   const [currentRow, setCurrentRow] = useState<Record<string, any>>({});
+  const prevRow = useRef<Record<string, any>>({});
 
   const handleClickRow = (rowData: Record<string, any>) => {
     prevRow.current = rowData;
@@ -78,7 +78,7 @@ function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
           </tbody>
         </table>
       </div>
-      <Drawer isOpen={isOpen} onClickBackdrop={() => setIsOpen(false)}>
+      {/* <Drawer isOpen={isOpen} onClickBackdrop={() => setIsOpen(false)}>
         <DrawerBody>
           {columnInformation.map((v) => (
             <InputField
@@ -96,7 +96,7 @@ function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
             Save
           </button>
         </DrawerFooter>
-      </Drawer>
+      </Drawer> */}
     </>
   );
 }

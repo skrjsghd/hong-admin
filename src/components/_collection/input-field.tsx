@@ -1,29 +1,21 @@
 import { ColumnInformation } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { HTMLInputTypeAttribute } from "react";
 import { Input, Label } from "../ui";
+import { BooleanSwitch } from "./boolean-switch";
 
-type InputFieldProps = {
+interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   columnInformation: ColumnInformation;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+  onValueChange: (value: any) => void;
+}
 
 function InputField({
+  value,
   columnInformation,
   className,
+  onValueChange,
   ...props
 }: InputFieldProps) {
   const { column_name, typname, typcategory, is_nullable, column_default } =
     columnInformation;
-
-  const getAttrType = (): HTMLInputTypeAttribute => {
-    if (typcategory === "N") {
-      return "number";
-    }
-    if (typcategory === "D") {
-      return "datetime-local";
-    }
-    return "text";
-  };
 
   const placeholder = column_default
     ? column_default
@@ -33,21 +25,50 @@ function InputField({
 
   const attr: React.InputHTMLAttributes<HTMLInputElement> = {
     id: column_name,
-    type: getAttrType(),
     placeholder,
-    className: cn("col-span-4", className),
+    value,
     ...props,
   };
 
   return (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="grid grid-cols-5 gap-4">
       <Label
         htmlFor={column_name}
         title={column_name}
         description={typname}
         className="col-span-1"
       />
-      <Input {...attr} />
+      <div className="col-span-4">
+        {typcategory === "B" && (
+          <BooleanSwitch
+            checked={Boolean(value)}
+            onChange={(e) => onValueChange(e.target.checked)}
+            {...attr}
+          />
+        )}
+        {typcategory === "N" && (
+          <Input
+            type="number"
+            onChange={(e) => onValueChange(e.target.value)}
+            {...attr}
+          />
+        )}
+        {typcategory === "D" && (
+          <Input
+            {...attr}
+            type="datetime-local"
+            onChange={(e) => onValueChange(e.target.value)}
+            className="block"
+          />
+        )}
+        {typcategory === "S" && (
+          <Input
+            type="text"
+            onChange={(e) => onValueChange(e.target.value)}
+            {...attr}
+          />
+        )}
+      </div>
     </div>
   );
 }

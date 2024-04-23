@@ -41,7 +41,7 @@ function AddRowButton({ columnInformation }: AddRowButtonProps) {
     if (!tableName) return;
     const result = await addRow(tableName, validPayload);
     setPayload(initialPayload);
-    setIsOpen(false);
+    handleClose();
   };
 
   return (

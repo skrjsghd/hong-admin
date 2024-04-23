@@ -95,6 +95,7 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
     );
   },
 );
+SelectTrigger.displayName = "SelectTrigger";
 
 interface SelectContentProps extends React.HTMLAttributes<HTMLDivElement> {}
 const SelectContent: React.FC<SelectContentProps> = ({
@@ -152,5 +153,6 @@ const SelectOption = React.forwardRef<HTMLDivElement, SelectOptionProps>(
     );
   },
 );
+SelectOption.displayName = "SelectOption";
 
 export { Select, SelectTrigger, SelectContent, SelectOption };

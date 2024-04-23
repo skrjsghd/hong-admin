@@ -14,7 +14,7 @@ const SheetContext = React.createContext<SheetContextValue>({
 
 interface SheetProps {
   children?: React.ReactNode;
-  open: boolean;
+  open?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
 }
 const Sheet: React.FC<SheetProps> = ({
@@ -25,7 +25,9 @@ const Sheet: React.FC<SheetProps> = ({
   const sheetRef = React.useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      sheetRef.current?.showModal();
+    } else {
       sheetRef.current?.close();
     }
     sheetRef.current?.addEventListener("close", () => {
@@ -87,5 +89,6 @@ const SheetClose = React.forwardRef<HTMLFormElement, SheetCloseProps>(
     return <form ref={ref} method="dialog" {...props} />;
   },
 );
+SheetClose.displayName = "SheetClose";
 
 export { Sheet, SheetTrigger, SheetContent, SheetClose };

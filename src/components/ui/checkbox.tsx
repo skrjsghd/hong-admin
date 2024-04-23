@@ -2,12 +2,13 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { Icon } from ".";
 
-export interface CheckboxProps extends React.HTMLAttributes<HTMLInputElement> {}
+export interface CheckboxProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
   ({ className, ...props }, ref) => {
     return (
-      <div className="relative h-4 w-4 shrink-0">
+      <div className="relative h-4 w-4 shrink-0 cursor-pointer">
         <input
           type="checkbox"
           className={cn(

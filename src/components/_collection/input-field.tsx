@@ -8,7 +8,6 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 function InputField({
-  value,
   columnInformation,
   className,
   onValueChange,
@@ -26,7 +25,6 @@ function InputField({
   const attr: React.InputHTMLAttributes<HTMLInputElement> = {
     id: column_name,
     placeholder,
-    value,
     ...props,
   };
 
@@ -41,31 +39,36 @@ function InputField({
       <div className="col-span-4">
         {typcategory === "B" && (
           <BooleanSwitch
-            checked={Boolean(value)}
-            onChange={(e) => onValueChange(e.target.checked)}
             {...attr}
+            checked={Boolean(attr.value)}
+            onChange={(e) => onValueChange(e.target.checked)}
           />
         )}
         {typcategory === "N" && (
           <Input
+            {...attr}
             type="number"
             onChange={(e) => onValueChange(e.target.value)}
-            {...attr}
           />
         )}
         {typcategory === "D" && (
           <Input
             {...attr}
             type="datetime-local"
+            value={
+              attr.value
+                ? new Date(attr.value as string).toISOString().split(".")[0]
+                : ""
+            }
             onChange={(e) => onValueChange(e.target.value)}
             className="block"
           />
         )}
         {typcategory === "S" && (
           <Input
+            {...attr}
             type="text"
             onChange={(e) => onValueChange(e.target.value)}
-            {...attr}
           />
         )}
       </div>

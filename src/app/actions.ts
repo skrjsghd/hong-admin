@@ -33,7 +33,7 @@ export async function connectToDB() {
   redirect("/collection");
 }
 
-export async function getTableInformation() {
+export async function getTableList() {
   try {
     const res = await query<TableInformation>(
       "SELECT * FROM information_schema.tables WHERE table_schema='public';",
@@ -133,6 +133,27 @@ export async function updateRow(params: {
     `;
     const v = [...values, ...whereValues];
     await query(q, v);
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+  revalidatePath("/collection");
+}
+
+export async function deleteRow(params: {
+  tableName: string;
+  where: Record<string, any>;
+}) {
+  const { tableName, where } = params;
+  try {
+    const whereKeys = Object.keys(where);
+    const whereValues = Object.values(where);
+
+    const q = `
+      DELETE FROM "${tableName}"
+      WHERE ${whereKeys.map((k, i) => `${k} = $${i + 1}`).join(" AND ")}
+    `;
+    await query(q, whereValues);
   } catch (e) {
     console.log(e);
     return null;

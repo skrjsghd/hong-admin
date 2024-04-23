@@ -1,4 +1,4 @@
-import { getTableInformation } from "@/app/actions";
+import { getTableList } from "@/app/actions";
 import { ChevronRightIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 
@@ -7,7 +7,7 @@ export default async function CollectionSidebarPage({
 }: {
   searchParams: { t: string | undefined };
 }) {
-  const tableList = await getTableInformation();
+  const tableList = await getTableList();
 
   return (
     <section className="flex flex-col space-y-2">

@@ -2,6 +2,7 @@
 
 import { connectToDB } from "@/app/actions";
 import { useState } from "react";
+import { Button, Input } from "./ui";
 
 function ConnectionForm() {
   const [url, setUrl] = useState("");
@@ -24,7 +25,7 @@ function ConnectionForm() {
 
   return (
     <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center gap-4">
-      <input
+      <Input
         type="text"
         name="db-url"
         placeholder="postgres://user:password@host:port/database"
@@ -32,13 +33,9 @@ function ConnectionForm() {
         onChange={handleChangeUrl}
       />
       {error && <p className="text-sm text-red-500">{error}</p>}
-      <button
-        className="w-full rounded-lg bg-zinc-900 px-3 py-2 font-medium text-zinc-50 hover:opacity-70 disabled:bg-zinc-400"
-        onClick={handleSubmit}
-        disabled={!url}
-      >
+      <Button className="w-full" onClick={handleSubmit} disabled={!url}>
         Connect
-      </button>
+      </Button>
     </div>
   );
 }

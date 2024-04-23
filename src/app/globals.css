@@ -39,20 +39,3 @@
       "calt" 1;
   }
 }
-
-@layer components {
-  input[type="text"],
-  input[type="number"] {
-    @apply w-full rounded-lg border border-zinc-300 px-3 py-2 outline-zinc-900 placeholder:text-zinc-400;
-  }
-
-  button {
-    @apply flex items-center justify-center gap-1 rounded-lg px-3 py-1 outline-1 -outline-offset-1;
-  }
-  button[data-type="primary"] {
-    @apply bg-zinc-900 text-zinc-50 hover:opacity-70 disabled:bg-zinc-400;
-  }
-  button[data-type="outline"] {
-    @apply text-zinc-500 outline hover:opacity-70 disabled:bg-zinc-400;
-  }
-}

@@ -3,9 +3,9 @@
 import { ColumnInformation, TableInformation } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { Pool, Query, QueryResult, QueryResultRow } from "pg";
+import { Pool, QueryResultRow } from "pg";
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URI;
 
 export async function query<T extends QueryResultRow>(
   query: string,
@@ -52,6 +52,8 @@ export async function getColumnInformation(tableName: string | undefined) {
           col.column_name,
           col.column_default,
           col.is_nullable,
+          col.is_identity,
+          col.identity_generation,
           cons.constraint_type,
           typ.typname,
           typ.typcategory
@@ -102,7 +104,7 @@ export async function addRow(tableName: string, data: Record<string, any>) {
     const values = Object.values(data);
 
     const q = `
-      INSERT INTO "${tableName}" (${keys.join(", ")})
+      INSERT INTO "${tableName}" (${keys.map((v) => `"${v}"`).join(", ")})
       VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})
     `;
 
@@ -128,8 +130,8 @@ export async function updateRow(params: {
 
     const q = `
       UPDATE "${tableName}"
-      SET ${keys.map((k, i) => `${k} = $${i + 1}`).join(", ")}
-      WHERE ${whereKeys.map((k, i) => `${k} = $${i + keys.length + 1}`).join(" AND ")}
+      SET ${keys.map((k, i) => `"${k}" = $${i + 1}`).join(", ")}
+      WHERE ${whereKeys.map((k, i) => `"${k}" = $${i + keys.length + 1}`).join(" AND ")}
     `;
     const v = [...values, ...whereValues];
     await query(q, v);

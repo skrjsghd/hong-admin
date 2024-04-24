@@ -17,9 +17,8 @@ function CollectionTableRow({
   columnInformation,
   ...props
 }: CollectionTableRowProps) {
-  const { selectedRowList, selectRow, unselectRow } = useCollectionStore(
-    (state) => state,
-  );
+  const { onClickRow, selectedRowList, selectRow, unselectRow } =
+    useCollectionStore((state) => state);
 
   const typeParser = (
     columnName: ColumnInformation["column_name"],
@@ -40,7 +39,11 @@ function CollectionTableRow({
   );
 
   return (
-    <tr className="cursor-pointer divide-x hover:bg-muted" {...props}>
+    <tr
+      {...props}
+      className="cursor-pointer divide-x hover:bg-muted"
+      onClick={() => onClickRow(data)}
+    >
       <td
         onClick={(e) => {
           e.stopPropagation();

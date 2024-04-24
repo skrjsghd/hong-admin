@@ -1,8 +1,5 @@
-"use client";
-
 import { CollectionTableRow } from "./collection-table-row";
 import { ColumnInformation } from "@/lib/types";
-import { useCollectionStore } from "@/stores/collection-store-provider";
 
 type CollectionTableProps = {
   columnInformation: ColumnInformation[];
@@ -10,8 +7,6 @@ type CollectionTableProps = {
 };
 
 function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
-  const { onClickRow } = useCollectionStore((state) => state);
-
   return (
     <div className="overflow-hidden rounded-lg border">
       <table className="w-full divide-y">
@@ -30,7 +25,6 @@ function CollectionTable({ columnInformation, rows }: CollectionTableProps) {
                 key={crypto.randomUUID()}
                 data={row}
                 columnInformation={columnInformation}
-                onClick={() => onClickRow(row)}
               />
             );
           })}

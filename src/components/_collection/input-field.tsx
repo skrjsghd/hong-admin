@@ -13,14 +13,19 @@ function InputField({
   onValueChange,
   ...props
 }: InputFieldProps) {
-  const { column_name, typname, typcategory, is_nullable, column_default } =
-    columnInformation;
+  const {
+    column_name,
+    typname,
+    typcategory,
+    is_nullable,
+    column_default,
+    identity_generation,
+  } = columnInformation;
 
-  const placeholder = column_default
-    ? column_default
-    : is_nullable === "YES"
-      ? "NULL"
-      : "";
+  const placeholder =
+    column_default ||
+    identity_generation ||
+    (is_nullable === "YES" ? "NULL" : "");
 
   const attr: React.InputHTMLAttributes<HTMLInputElement> = {
     id: column_name,

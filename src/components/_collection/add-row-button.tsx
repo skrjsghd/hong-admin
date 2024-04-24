@@ -20,12 +20,16 @@ function AddRowButton({ columnInformation }: AddRowButtonProps) {
   const [payload, setPayload] = useState(initialPayload);
 
   const validPayload = columnInformation.reduce((acc, col) => {
-    const { column_name, is_nullable, column_default } = col;
+    const { column_name, is_nullable, column_default, is_identity } = col;
     const value = payload[column_name];
 
     if (value !== null && value !== undefined && value !== "") {
       return { ...acc, [column_name]: value };
-    } else if (is_nullable === "YES" || column_default) {
+    } else if (
+      is_nullable === "YES" ||
+      column_default ||
+      is_identity === "YES"
+    ) {
       return acc;
     } else {
       return { ...acc, [column_name]: "" };

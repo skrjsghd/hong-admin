@@ -65,6 +65,8 @@ export type ColumnInformation = {
   column_default: string | null;
   is_nullable: "YES" | "NO";
   constraint_type: string | null;
+  is_identity: "YES" | "NO";
+  identity_generation: string | null;
   typname: string;
   typcategory:
     | "A" // Array

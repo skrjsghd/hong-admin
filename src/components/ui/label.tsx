@@ -33,9 +33,9 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
         {...props}
       >
         <div className="max-w-40 space-y-1 whitespace-pre-wrap leading-none">
-          <div className="font-medium">{title}</div>
+          <div className="text-sm font-medium">{title}</div>
           {description && (
-            <div className="text-muted-foreground text-sm">{description}</div>
+            <div className="text-sm text-muted-foreground">{description}</div>
           )}
         </div>
         {children}

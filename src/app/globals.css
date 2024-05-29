@@ -12,6 +12,7 @@
     --muted-foreground: theme("colors.m.500");
     --border: theme("colors.m.200");
     --ring: theme("colors.p.500");
+    --destructive: theme("colors.red.500");
 
     --radius: 0.5rem;
   }
@@ -25,6 +26,7 @@
     --muted-foreground: theme("colors.m.400");
     --border: theme("colors.m.600");
     --ring: theme("colors.p.500");
+    --destructive: theme("colors.red.500");
   }
 }
 

@@ -1,16 +1,13 @@
-import { ConnectionForm } from "@/components/connection-form";
-import Link from "next/link";
+import { Header } from "@/components/header";
+import { auth } from "@/lib/auth";
 
 export default async function Page() {
+  const session = await auth();
   return (
     <section className="h-svh">
-      <Link
-        href="https://docs.google.com/presentation/d/1fKkMOrrrQmYmlC-Ft2caGVw7qLFzV45A0tC67xUfj_c/edit?usp=sharing"
-        target="_blank"
-      >
-        발표자료로
-      </Link>
-      <ConnectionForm />
+      <Header />
+      {/* <ConnectionForm /> */}
+      <div>session data : {JSON.stringify(session)}</div>
     </section>
   );
 }

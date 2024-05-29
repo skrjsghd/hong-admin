@@ -25,6 +25,7 @@ const config: Config = {
         },
         border: "var(--border)",
         ring: "var(--ring)",
+        destructive: "var(--destructive)",
       },
       borderRadius: {
         lg: `var(--radius)`,

@@ -17,6 +17,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  setting       Setting?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -59,4 +60,14 @@ model VerificationToken {
   expires    DateTime
 
   @@id([identifier, token])
+}
+
+model Setting {
+  connectionUri String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @id @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { connectToDB } from "@/app/actions";
+import { connectToDB } from "@/actions/query";
 import { useState } from "react";
 import { Button, Input } from "./ui";
 

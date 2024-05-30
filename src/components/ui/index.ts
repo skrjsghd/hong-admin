@@ -7,4 +7,5 @@ export * from "./label";
 export * from "./select";
 export * from "./sheet";
 export * from "./switch";
+export * from "./table";
 export * from "./textarea";

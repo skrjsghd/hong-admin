@@ -33,7 +33,7 @@ export async function connectToDB() {
   redirect("/collection");
 }
 
-export async function getTableList() {
+export async function getTableListAction() {
   try {
     const res = await query<TableInformation>(
       "SELECT * FROM information_schema.tables WHERE table_schema='public';",

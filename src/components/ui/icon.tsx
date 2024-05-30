@@ -13,6 +13,9 @@ const iconVariants = cva("", {
       mini: "w-5 h-5",
     },
   },
+  defaultVariants: {
+    variant: "solid",
+  },
 });
 
 export interface IconProps extends React.SVGProps<SVGSVGElement> {

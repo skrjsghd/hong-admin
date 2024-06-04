@@ -1,3 +1,3 @@
 export default function SettingPage() {
-  return <main></main>;
+  return <section>hi</section>;
 }

@@ -1,5 +1,5 @@
-import { getTableListAction } from "@/actions/query";
 import { SideTableListMenu } from "@/components/side-table-list-menu";
+import { SideUserProfile } from "@/components/side-user-profile";
 import { TableHeaderMenu } from "@/components/table-header-menu";
 import {
   Table,
@@ -17,15 +17,14 @@ export default async function Page({
 }: {
   searchParams: { t: string };
 }) {
-  const tableList = await getTableListAction();
   const currentTableName = searchParams.t;
 
   return (
     <div className="flex h-svh">
-      <SideTableListMenu
-        tableList={tableList.map(({ table_name }) => table_name)}
-        currentTableName={currentTableName}
-      />
+      <aside className="flex min-w-[250px] flex-col divide-y border-r">
+        <SideTableListMenu currentTableName={currentTableName} />
+        <SideUserProfile />
+      </aside>
       <main className="flex w-full flex-col">
         <TableHeaderMenu />
         <div className="flex-1 px-6 pt-10">

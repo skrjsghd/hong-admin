@@ -1,43 +1,27 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Icon } from "./ui";
-import { auth } from "@/lib/auth";
+import { getAllTables } from "@/actions/query";
 
 type SideTableListMenuProps = {
-  tableList: string[];
   currentTableName?: string;
 };
-async function SideTableListMenu({
-  tableList,
-  currentTableName,
-}: SideTableListMenuProps) {
-  const session = await auth();
+async function SideTableListMenu({ currentTableName }: SideTableListMenuProps) {
+  const { success, value } = await getAllTables();
 
+  if (!success) {
+    return null;
+  }
   return (
-    <aside className="flex min-w-[250px] flex-col divide-y border-r">
-      <ul className="flex-1 space-y-2 p-6 pl-4">
-        {tableList.map((name) => (
-          <SideTableListItem
-            key={name}
-            tableName={name}
-            currentTable={currentTableName}
-          />
-        ))}
-      </ul>
-      <div className="flex items-center px-6 py-4">
-        <Link
-          href="/setting"
-          className="flex items-center gap-2 rounded-md transition-all"
-        >
-          <div className="size-10 rounded-full bg-muted"></div>
-          <div className="font-medium">{session?.user?.name}</div>
-          <Icon
-            name="ChevronDownIcon"
-            className="size-4 text-muted-foreground"
-          />
-        </Link>
-      </div>
-    </aside>
+    <ul className="flex-1 space-y-2 p-6 pl-4">
+      {value.map(({ table_name }) => (
+        <SideTableListItem
+          key={table_name}
+          tableName={table_name}
+          currentTable={currentTableName}
+        />
+      ))}
+    </ul>
   );
 }
 

@@ -4,28 +4,20 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ColumnInformation, TableInformation } from "@/lib/types";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { Pool, QueryResultRow } from "pg";
-
-// const connectionString = process.env.DATABASE_URI;
+import { FieldDef, Pool } from "pg";
 
 type QueryResult<T> = {
   success: boolean;
   value: T;
 };
 
-// export async function query<T extends QueryResultRow>(
-//   query: string,
-//   values?: any[],
-// ) {
-//   const pool = new Pool({
-//     connectionString,
-//   });
-
-//   const res = await pool.query<T>(query, values);
-//   await pool.end();
-//   return res;
-// }
+async function createPool() {
+  const session = await auth();
+  const pool = new Pool({
+    connectionString: session?.user?.connectionString || "",
+  });
+  return pool;
+}
 
 export async function connectWithURI(uri: string) {
   try {
@@ -69,12 +61,9 @@ export async function connectWithURI(uri: string) {
 
 export async function getAllTables(): Promise<QueryResult<TableInformation[]>> {
   try {
-    const session = await auth();
     const q =
       "SELECT * FROM information_schema.tables WHERE table_schema='public';";
-    const pool = new Pool({
-      connectionString: session?.user?.connectionString || "",
-    });
+    const pool = await createPool();
     const res = await pool.query<TableInformation>(q);
     await pool.end();
     return {
@@ -89,59 +78,75 @@ export async function getAllTables(): Promise<QueryResult<TableInformation[]>> {
   }
 }
 
-// export async function getColumnInformation(tableName: string | undefined) {
-//   try {
-//     const res = await query<ColumnInformation>(
-//       `
-//       SELECT
-//           col.column_name,
-//           col.column_default,
-//           col.is_nullable,
-//           col.is_identity,
-//           col.identity_generation,
-//           cons.constraint_type,
-//           typ.typname,
-//           typ.typcategory
-//       FROM
-//           information_schema.columns AS col
-//       LEFT JOIN
-//           information_schema.key_column_usage AS kcu ON col.table_name = kcu.table_name AND col.column_name = kcu.column_name
-//       LEFT JOIN
-//           pg_catalog.pg_type AS typ ON col.udt_name = typ.typname
-//       LEFT JOIN
-//           information_schema.table_constraints AS cons ON kcu.constraint_name = cons.constraint_name
-//       WHERE
-//           col.table_name = $1;
-//       `,
-//       [tableName],
-//     );
+export async function getTableColumnInformation(
+  tableName: string,
+): Promise<QueryResult<ColumnInformation[]>> {
+  try {
+    const q = `
+      SELECT
+          col.column_name,
+          col.column_default,
+          col.is_nullable,
+          col.is_identity,
+          col.identity_generation,
+          cons.constraint_type,
+          typ.typname,
+          typ.typcategory
+      FROM
+          information_schema.columns AS col
+      LEFT JOIN
+          information_schema.key_column_usage AS kcu ON col.table_name = kcu.table_name AND col.column_name = kcu.column_name
+      LEFT JOIN
+          pg_catalog.pg_type AS typ ON col.udt_name = typ.typname
+      LEFT JOIN
+          information_schema.table_constraints AS cons ON kcu.constraint_name = cons.constraint_name
+      WHERE
+          col.table_name = $1;
+      `;
+    const pool = await createPool();
+    const result = await pool.query<ColumnInformation>(q, [tableName]);
+    await pool.end();
+    return {
+      success: true,
+      value: result.rows,
+    };
+  } catch (e) {
+    return {
+      success: false,
+      value: [],
+    };
+  }
+}
 
-//     return res.rows;
-//   } catch (e) {
-//     return null;
-//   }
-// }
+export async function getTableData(tableName: string): Promise<
+  QueryResult<{
+    fields: FieldDef[];
+    rows: Record<string, string>[];
+  }>
+> {
+  try {
+    const q = `SELECT * FROM "${tableName}";`;
+    const pool = await createPool();
+    const { fields, rows } = await pool.query<Record<string, string>>(q);
+    await pool.end();
 
-// export async function getTableRows(tableName?: string | null) {
-//   try {
-//     const pool = new Pool({
-//       connectionString,
-//     });
-
-//     const res = await pool.query<Record<string, string>>(
-//       `SELECT * FROM "${tableName}";`,
-//     );
-//     await pool.end();
-//     const { fields, rows } = res;
-
-//     return {
-//       fields: fields.map((f) => ({ ...f })),
-//       rows,
-//     };
-//   } catch (e) {
-//     return null;
-//   }
-// }
+    return {
+      success: true,
+      value: {
+        fields: fields.map((f) => ({ ...f })),
+        rows,
+      },
+    };
+  } catch (e) {
+    return {
+      success: false,
+      value: {
+        fields: [],
+        rows: [],
+      },
+    };
+  }
+}
 
 // export async function addRow(tableName: string, data: Record<string, any>) {
 //   try {

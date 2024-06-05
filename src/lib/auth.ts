@@ -52,7 +52,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           userId: token.sub as string,
         },
       });
-      console.log("session updated!");
       return {
         ...session,
         user: {

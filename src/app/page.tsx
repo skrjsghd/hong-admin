@@ -1,15 +1,16 @@
+import { getTableData } from "@/actions/query";
 import { SideTableListMenu } from "@/components/side-table-list-menu";
 import { SideUserProfile } from "@/components/side-user-profile";
 import { TableHeaderMenu } from "@/components/table-header-menu";
+import { TypedTableCell } from "@/components/typed-table-cell";
 import {
   Table,
-  TableCaption,
   TableHeader,
   TableRow,
   TableHead,
   TableBody,
   TableCell,
-  Icon,
+  Checkbox,
 } from "@/components/ui";
 
 export default async function Page({
@@ -18,6 +19,8 @@ export default async function Page({
   searchParams: { t: string };
 }) {
   const currentTableName = searchParams.t;
+  const { value } = await getTableData(currentTableName);
+  const { fields, rows } = value;
 
   return (
     <div className="flex h-svh">
@@ -25,41 +28,36 @@ export default async function Page({
         <SideTableListMenu currentTableName={currentTableName} />
         <SideUserProfile />
       </aside>
-      <main className="flex w-full flex-col">
+      <main className="flex w-full flex-col overflow-hidden">
         <TableHeaderMenu />
-        <div className="flex-1 px-6 pt-10">
-          <Table>
-            <TableCaption>A list of your recent invoices.</TableCaption>
+        <div className="flex-1 p-4">
+          <Table className="overflow-x-scroll">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Invoice</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableCell className="w-fit">
+                  <Checkbox />
+                </TableCell>
+                {fields.map(({ name }) => {
+                  return <TableHead key={name}>{name}</TableHead>;
+                })}
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">INV001</TableCell>
-                <TableCell>Paid</TableCell>
-                <TableCell>Credit Card</TableCell>
-                <TableCell className="text-right">$250.00</TableCell>
-              </TableRow>
+              {rows.map((row, i) => {
+                return (
+                  <TableRow key={i}>
+                    <TableCell className="w-fit">
+                      <Checkbox />
+                    </TableCell>
+                    {fields.map(({ name }) => {
+                      return <TypedTableCell key={name} data={row[name]} />;
+                    })}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
-        <footer className="flex items-center justify-between px-10 py-6">
-          <span className="font-medium text-muted-foreground">
-            1,231,112 Rows
-          </span>
-          <div className="flex items-center gap-4">
-            <Icon name="ChevronLeftIcon" className="size-4" />
-            <span className="text-sm text-muted-foreground">
-              1 of 124 pages
-            </span>
-            <Icon name="ChevronRightIcon" className="size-4" />
-          </div>
-        </footer>
       </main>
     </div>
   );

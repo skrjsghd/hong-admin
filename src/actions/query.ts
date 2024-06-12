@@ -95,13 +95,15 @@ export async function getTableColumnInformation(
       FROM
           information_schema.columns AS col
       LEFT JOIN
-          information_schema.key_column_usage AS kcu ON col.table_name = kcu.table_name AND col.column_name = kcu.column_name
+          pg_type AS typ ON col.udt_name = typ.typname
       LEFT JOIN
-          pg_catalog.pg_type AS typ ON col.udt_name = typ.typname
+          information_schema.key_column_usage AS kcu ON col.table_name = kcu.table_name AND col.column_name = kcu.column_name
       LEFT JOIN
           information_schema.table_constraints AS cons ON kcu.constraint_name = cons.constraint_name
       WHERE
-          col.table_name = $1;
+          col.table_name = $1
+      ORDER BY
+          col.ordinal_position;
       `;
     const pool = await createPool();
     const result = await pool.query<ColumnInformation>(q, [tableName]);
@@ -111,6 +113,7 @@ export async function getTableColumnInformation(
       value: result.rows,
     };
   } catch (e) {
+    console.log(e);
     return {
       success: false,
       value: [],

@@ -38,10 +38,10 @@ const Icon: React.FC<IconProps> = ({
   const classes = cn(iconVariants({ variant, className }));
   if (variant === "mini") {
     const Comp = Mini[name];
-    return <Comp className={classes} {...props} />;
+    return <Comp className={classes} strokeWidth={2} {...props} />;
   }
 
-  return <Component className={classes} {...props} />;
+  return <Component className={classes} strokeWidth={2} {...props} />;
 };
 Icon.displayName = "Icon";
 

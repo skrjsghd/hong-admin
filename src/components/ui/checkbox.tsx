@@ -10,10 +10,9 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     return (
       <div className="relative h-4 w-4 shrink-0 cursor-pointer">
         <input
-          role="checkbox"
           type="checkbox"
           className={cn(
-            "peer h-full w-full cursor-pointer appearance-none rounded-sm border checked:border-primary checked:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            "peer h-full w-full cursor-pointer appearance-none rounded-sm border bg-background checked:border-primary checked:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
             className,
           )}
           {...props}

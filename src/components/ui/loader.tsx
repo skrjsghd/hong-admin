@@ -6,7 +6,7 @@ type LoaderProps = {
 function Loader({ className }: LoaderProps) {
   return (
     <svg
-      className={cn("animate-spin", className)}
+      className={cn("h-5 w-5 animate-spin", className)}
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"

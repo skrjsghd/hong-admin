@@ -1,9 +1,8 @@
+import { getUserSetting } from "@/actions/auth";
 import { ConnectionForm } from "@/components/_setting/connection-form";
-import { auth } from "@/lib/auth";
 
 export default async function SettingConnectionsPage() {
-  const session = await auth();
-  const connectionURI = session?.user.connectionString;
+  const userSetting = await getUserSetting();
 
   return (
     <section className="space-y-16">
@@ -17,7 +16,7 @@ export default async function SettingConnectionsPage() {
           Write your DB URI to access the database
         </p>
       </div>
-      <ConnectionForm defaultURI={connectionURI} />
+      <ConnectionForm defaultURI={userSetting?.connectionUri} />
     </section>
   );
 }

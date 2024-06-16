@@ -4,7 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ColumnInformation, TableInformation } from "@/lib/types";
 import { revalidatePath } from "next/cache";
-import { FieldDef, Pool } from "pg";
+import { Pool } from "pg";
+import { getUserSetting } from "./auth";
 
 type QueryResult<T> = {
   success: boolean;
@@ -12,9 +13,9 @@ type QueryResult<T> = {
 };
 
 async function createPool() {
-  const session = await auth();
+  const userSetting = await getUserSetting();
   const pool = new Pool({
-    connectionString: session?.user?.connectionString || "",
+    connectionString: userSetting?.connectionUri || "",
   });
   return pool;
 }
@@ -59,28 +60,20 @@ export async function connectWithURI(uri: string) {
   }
 }
 
-export async function getAllTables(): Promise<QueryResult<TableInformation[]>> {
+export async function getAllTables() {
   try {
     const q =
       "SELECT * FROM information_schema.tables WHERE table_schema='public';";
     const pool = await createPool();
     const res = await pool.query<TableInformation>(q);
     await pool.end();
-    return {
-      success: true,
-      value: res.rows,
-    };
+    return res.rows;
   } catch (e) {
-    return {
-      success: false,
-      value: [],
-    };
+    return null;
   }
 }
 
-export async function getTableColumnInformation(
-  tableName: string,
-): Promise<QueryResult<ColumnInformation[]>> {
+export async function getTableColumnInformation(tableName: string) {
   try {
     const q = `
       SELECT
@@ -108,66 +101,56 @@ export async function getTableColumnInformation(
     const pool = await createPool();
     const result = await pool.query<ColumnInformation>(q, [tableName]);
     await pool.end();
+    return result.rows;
+  } catch (e) {
+    throw new Error("Failed to get column information.");
+  }
+}
+
+export async function getTableData(tableName: string) {
+  try {
+    const q = `SELECT * FROM "${tableName}";`;
+    const pool = await createPool();
+    const result = await pool.query<Record<string, string>>(q);
+    await pool.end();
+
+    return {
+      fields: result.fields.map((f) => ({ ...f })),
+      rows: result.rows,
+    };
+  } catch (e) {
+    throw new Error("Failed to get table data.");
+  }
+}
+
+export async function addRow(
+  tableName: TableInformation["table_name"],
+  data: Record<string, any>,
+): Promise<QueryResult<string>> {
+  try {
+    const keys = Object.keys(data);
+    const values = Object.values(data);
+
+    const q = `
+      INSERT INTO "${tableName}" (${keys.map((v) => `"${v}"`).join(", ")})
+      VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})
+    `;
+    const pool = await createPool();
+    await pool.query(q, values);
+    await pool.end();
+    revalidatePath(`/?t=${tableName}`);
     return {
       success: true,
-      value: result.rows,
+      value: "Row added successfully.",
     };
   } catch (e) {
     console.log(e);
     return {
       success: false,
-      value: [],
+      value: "Failed to add row.",
     };
   }
 }
-
-export async function getTableData(tableName: string): Promise<
-  QueryResult<{
-    fields: FieldDef[];
-    rows: Record<string, string>[];
-  }>
-> {
-  try {
-    const q = `SELECT * FROM "${tableName}";`;
-    const pool = await createPool();
-    const { fields, rows } = await pool.query<Record<string, string>>(q);
-    await pool.end();
-
-    return {
-      success: true,
-      value: {
-        fields: fields.map((f) => ({ ...f })),
-        rows,
-      },
-    };
-  } catch (e) {
-    return {
-      success: false,
-      value: {
-        fields: [],
-        rows: [],
-      },
-    };
-  }
-}
-
-// export async function addRow(tableName: string, data: Record<string, any>) {
-//   try {
-//     const keys = Object.keys(data);
-//     const values = Object.values(data);
-
-//     const q = `
-//       INSERT INTO "${tableName}" (${keys.map((v) => `"${v}"`).join(", ")})
-//       VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})
-//     `;
-
-//     await query(q, values);
-//   } catch (e) {
-//     console.log(e);
-//     return null;
-//   }
-//   revalidatePath("/collection");
-// }
 
 // export async function updateRow(params: {
 //   tableName: string;

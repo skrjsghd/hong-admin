@@ -1,16 +1,12 @@
-import NextAuth, { DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Github from "next-auth/providers/github";
 import bcrypt from "bcrypt";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { Adapter } from "next-auth/adapters";
+import { authConfig } from "./auth-config";
 import { prisma } from "./prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma) as Adapter,
-  session: {
-    strategy: "jwt",
-  },
+  ...authConfig,
   providers: [
     Github,
     Credentials({
@@ -45,29 +41,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async session({ session, token }) {
-      const userSetting = await prisma.setting.findUnique({
-        where: {
-          userId: token.sub as string,
-        },
-      });
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.sub || "",
-          connectionString: userSetting?.connectionUri,
-        },
-      };
-    },
-  },
 });
-
-declare module "next-auth" {
-  interface Session {
-    user: {
-      connectionString: string | null;
-    } & DefaultSession["user"];
-  }
-}

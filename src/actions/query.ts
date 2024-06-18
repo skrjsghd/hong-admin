@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ColumnInformation, TableInformation } from "@/lib/types";
 import { revalidatePath } from "next/cache";
-import { Pool } from "pg";
+import { FieldDef, Pool } from "pg";
 import { getUserSetting } from "./auth";
 
 type QueryResult<T> = {
@@ -107,7 +107,13 @@ export async function getTableColumnInformation(tableName: string) {
   }
 }
 
-export async function getTableData(tableName: string) {
+export type GetTableDataReturn = {
+  fields: Array<FieldDef>;
+  rows: Record<string, string>[];
+};
+export async function getTableData(
+  tableName: string,
+): Promise<GetTableDataReturn> {
   try {
     const q = `SELECT * FROM "${tableName}";`;
     const pool = await createPool();
@@ -138,7 +144,7 @@ export async function addRow(
     const pool = await createPool();
     await pool.query(q, values);
     await pool.end();
-    revalidatePath(`/?t=${tableName}`);
+    revalidatePath(`/table/${tableName}`);
     return {
       success: true,
       value: "Row added successfully.",
@@ -149,6 +155,29 @@ export async function addRow(
       success: false,
       value: "Failed to add row.",
     };
+  }
+}
+
+export async function deleteRow(
+  tableName: TableInformation["table_name"],
+  values: Record<string, any>[],
+) {
+  try {
+    const pool = await createPool();
+
+    values.forEach(async (v) => {
+      const keys = Object.keys(v);
+      const value = Object.values(v);
+      const q = `
+        DELETE FROM "${tableName}"
+        WHERE ${keys.map((k, i) => `"${k}" = $${i + 1}`).join(" AND ")}
+      `;
+      await pool.query(q, value);
+    });
+    await pool.end();
+    revalidatePath(`/table/${tableName}`);
+  } catch (e) {
+    throw new Error("Failed to delete row.");
   }
 }
 
@@ -171,27 +200,6 @@ export async function addRow(
 //     `;
 //     const v = [...values, ...whereValues];
 //     await query(q, v);
-//   } catch (e) {
-//     console.log(e);
-//     return null;
-//   }
-//   revalidatePath("/collection");
-// }
-
-// export async function deleteRow(params: {
-//   tableName: string;
-//   where: Record<string, any>;
-// }) {
-//   const { tableName, where } = params;
-//   try {
-//     const whereKeys = Object.keys(where);
-//     const whereValues = Object.values(where);
-
-//     const q = `
-//       DELETE FROM "${tableName}"
-//       WHERE ${whereKeys.map((k, i) => `${k} = $${i + 1}`).join(" AND ")}
-//     `;
-//     await query(q, whereValues);
 //   } catch (e) {
 //     console.log(e);
 //     return null;

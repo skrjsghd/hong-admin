@@ -1,50 +1,52 @@
-import { getTableData } from "@/actions/query";
-import { TypedTableCell } from "@/components/_table/typed-table-cell";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-  Checkbox,
-} from "@/components/ui";
+import { getTableData, getTableColumnInformation } from "@/actions/query";
+import { MainTable } from "@/components/_table/main-table";
+import { Button, Icon } from "@/components/ui";
+import { NewRowButton } from "@/components/_table/new-row-button";
 
 export default async function TableMainPage({
   params,
 }: {
   params: { name: string };
 }) {
-  const tableData = await getTableData(params.name);
+  const tableName = params.name;
+  const [tableData, columnInformation] = await Promise.all([
+    getTableData(tableName),
+    getTableColumnInformation(tableName),
+  ]);
 
   return (
-    <div className="flex-1 pt-4">
-      <Table className="overflow-x-scroll">
-        <TableHeader>
-          <TableRow>
-            <TableCell className="sticky left-0 w-fit bg-gradient-to-r from-background via-background to-transparent">
-              <Checkbox />
-            </TableCell>
-            {tableData.fields.map(({ name }) => {
-              return <TableHead key={name}>{name}</TableHead>;
-            })}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tableData.rows.map((row, i) => {
-            return (
-              <TableRow key={i} className="cursor-pointer hover:bg-muted">
-                <TableCell className="sticky left-0 w-fit bg-gradient-to-r from-background via-background via-70% to-transparent">
-                  <Checkbox />
-                </TableCell>
-                {tableData.fields.map(({ name }) => {
-                  return <TypedTableCell key={name} data={row[name]} />;
-                })}
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+    <section className="flex w-full flex-col overflow-hidden">
+      <header className="flex items-center justify-between border-b px-4 py-3">
+        <ul className="flex items-center gap-2">
+          <Button size="sm" variant="outline">
+            <Icon name="Bars3BottomLeftIcon" className="size-4" />
+            Sort
+          </Button>
+          <Button size="sm" variant="outline">
+            <Icon name="Bars3BottomLeftIcon" className="size-4" />
+            Filters
+          </Button>
+          {/* <Input className="h-9 w-[200px]" placeholder="search..." /> */}
+          <NewRowButton
+            currentTableName={tableName}
+            columnInformation={columnInformation}
+          />
+        </ul>
+        {/* <ul className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            1 row(s) selected
+          </span>
+          <Button size="sm" variant="secondary">
+            <Icon name="TrashIcon" className="size-4" variant="outline" />
+            Delete
+          </Button>
+        </ul> */}
+      </header>
+      <MainTable
+        tableName={tableName}
+        columnInformation={columnInformation}
+        data={tableData}
+      />
+    </section>
   );
 }

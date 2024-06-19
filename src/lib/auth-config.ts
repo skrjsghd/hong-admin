@@ -11,11 +11,18 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      if (isLoggedIn && nextUrl.pathname === "/") {
-        return Response.redirect(new URL("/table", nextUrl.origin));
-      }
-      if (!isLoggedIn && nextUrl.pathname !== "/login") {
-        return Response.redirect(new URL("/login", nextUrl.origin));
+      if (isLoggedIn) {
+        if (nextUrl.pathname === "/") {
+          return Response.redirect(new URL("/table", nextUrl.origin));
+        }
+        return true;
+      } else {
+        if (nextUrl.pathname.startsWith("/register")) {
+          return true;
+        }
+        if (nextUrl.pathname !== "/login") {
+          return Response.redirect(new URL("/login", nextUrl.origin));
+        }
       }
       return true;
     },

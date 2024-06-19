@@ -18,6 +18,9 @@ export default function SettingLayout({
           <SettingMenuItem href="/setting/connections">
             connections
           </SettingMenuItem>
+          <SettingMenuItem href="https://drive.google.com/file/d/1jiCIu2ppsV4AugIiGlcLpG1vk88Ptph0/view">
+            presentation
+          </SettingMenuItem>
         </SettingMenuLabel>
       </aside>
       <div className="grid grid-rows-[auto_1fr]">

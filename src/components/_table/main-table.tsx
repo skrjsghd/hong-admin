@@ -15,18 +15,21 @@ import {
 import { TypedTableCell } from "./typed-table-cell";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ColumnInformation } from "@/lib/types";
+import { useTableStore } from "@/stores/table-store-provider";
+import { useRouter } from "next/navigation";
 
 type MainTableProps = {
   tableName: string;
-  columnInformation: ColumnInformation[];
   data: GetTableDataReturn;
 };
-function MainTable({ tableName, columnInformation, data }: MainTableProps) {
+function MainTable({ tableName, data }: MainTableProps) {
+  const router = useRouter();
+
   const { fields, rows } = data;
   const [selectedRows, setSelectedRows] = useState<Record<string, string>[]>(
     [],
   );
+  const { setCurrentRow } = useTableStore((state) => state);
 
   const isRowSelected = (row: Record<string, string>) => {
     return selectedRows.some((r) => r === row);
@@ -56,7 +59,6 @@ function MainTable({ tableName, columnInformation, data }: MainTableProps) {
   const deleteSelectedRows = async () => {
     try {
       if (confirm("Are you sure you want to delete these rows?")) {
-        // Delete selected rows
         await deleteRow(tableName, selectedRows);
         setSelectedRows([]);
         toast.success("Rows deleted successfully.");
@@ -65,11 +67,14 @@ function MainTable({ tableName, columnInformation, data }: MainTableProps) {
       toast.error("Failed to delete rows.");
     }
   };
+  const handleClickRow = (row: Record<string, string>) => {
+    setCurrentRow(row);
+    router.push(`/table/${tableName}/row`);
+  };
 
   return (
     <div className="flex-1">
       <div className="h-10 px-4">
-        {/* {JSON.stringify(columnInformation)} */}
         {selectedRows.length > 0 && (
           <div className="flex h-full items-center gap-4">
             <span className="text-sm text-muted-foreground">
@@ -96,10 +101,19 @@ function MainTable({ tableName, columnInformation, data }: MainTableProps) {
         <TableBody>
           {rows.map((row, i) => {
             return (
-              <TableRow key={i} className="cursor-pointer hover:bg-muted">
+              <TableRow
+                key={i}
+                className="cursor-pointer hover:bg-muted"
+                onClick={() => {
+                  handleClickRow(row);
+                }}
+              >
                 <TableCell className="sticky left-0 w-fit bg-gradient-to-r from-background via-background via-70% to-transparent">
                   <Checkbox
                     checked={isRowSelected(row)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
                     onChange={() => handleSelectRow(row)}
                   />
                 </TableCell>

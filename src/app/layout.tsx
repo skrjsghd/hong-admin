@@ -2,6 +2,7 @@ import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { TableStoreProvider } from "@/stores/table-store-provider";
 
 const pretendard = localFont({
   src: "../assets/fonts/PretendardVariable.woff2",
@@ -22,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={pretendard.className}>
-        <div>{children}</div>
+        <TableStoreProvider>
+          <div className="h-svh">{children}</div>
+        </TableStoreProvider>
         <Toaster />
       </body>
     </html>

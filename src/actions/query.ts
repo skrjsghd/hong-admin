@@ -6,6 +6,7 @@ import { ColumnInformation, TableInformation } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { FieldDef, Pool } from "pg";
 import { getUserSetting } from "./auth";
+import { redirect } from "next/navigation";
 
 type QueryResult<T> = {
   success: boolean;
@@ -155,6 +156,37 @@ export async function addRow(
       success: false,
       value: "Failed to add row.",
     };
+  }
+}
+
+export async function updateRow(
+  tableName: TableInformation["table_name"],
+  {
+    where,
+    data,
+  }: {
+    where: Record<string, any>;
+    data: Record<string, any>;
+  },
+) {
+  try {
+    const pool = await createPool();
+    const dataKeys = Object.keys(data);
+    const dataValues = Object.values(data);
+    const whereKeys = Object.keys(where);
+    const whereValues = Object.values(where);
+    const q = `
+      UPDATE "${tableName}"
+      SET ${dataKeys.map((k, i) => `"${k}" = $${i + 1}`).join(", ")}
+      WHERE ${whereKeys.map((k, i) => `"${k}" = $${i + dataKeys.length + 1}`).join(" AND ")}
+    `;
+    const v = [...dataValues, ...whereValues];
+    await pool.query(q, v);
+    await pool.end();
+    revalidatePath(`/table/${tableName}`);
+    return true;
+  } catch {
+    return null;
   }
 }
 

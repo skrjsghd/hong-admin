@@ -1,9 +1,10 @@
 "use client";
 
-import { Fragment, useState, useTransition } from "react";
-import { Button, Input, Modal, Switch, Textarea } from "../ui";
+import { useState, useTransition } from "react";
+import { Button, Modal } from "../ui";
 import { ColumnInformation } from "@/lib/types";
 import { addRow } from "@/actions/query";
+import { RowField } from "./row-field";
 
 const isRequired = (column: ColumnInformation) => {
   if (column.is_nullable === "NO" && column.column_default === null) {
@@ -31,22 +32,6 @@ function NewRowButton({
   const [showModal, setShowModal] = useState(false);
   const [payload, setPayload] = useState<Record<string, any>>(initialPayload);
   const [isPending, startTransition] = useTransition();
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    columnInformation: ColumnInformation,
-  ) => {
-    setPayload((prev) => {
-      if (e.target.value === "" && !isRequired(columnInformation)) {
-        const { [e.target.name]: _, ...rest } = prev;
-        return rest;
-      }
-      return {
-        ...prev,
-        [e.target.name]: e.target.value,
-      };
-    });
-  };
 
   const handleSubmit = () => {
     startTransition(async () => {
@@ -83,56 +68,20 @@ function NewRowButton({
         <h1 className="p-4 text-xl font-semibold">{currentTableName}</h1>
         <div className="grid w-full grid-cols-[auto_1fr] place-content-start gap-x-10 gap-y-6 overflow-y-scroll p-6 pb-20">
           {columnInformation.map((value) => {
-            const {
-              column_default,
-              constraint_type,
-              typname,
-              typcategory,
-              column_name,
-            } = value;
-            const inputAttr: React.InputHTMLAttributes<
-              HTMLInputElement | HTMLTextAreaElement
-            > = {
-              name: column_name,
-              placeholder: column_default || constraint_type || "NULL",
-              value: payload[column_name],
-              onChange: (e) => handleInputChange(e, value),
-            };
-            const required = isRequired(value);
             return (
-              <Fragment key={column_name}>
-                <div className="text-sm">
-                  <div className="font-medium">
-                    {required && "*"}
-                    {column_name}
-                  </div>
-                  <div className="text-muted-foreground">{typname}</div>
-                </div>
-
-                {typcategory === "S" && <Textarea {...inputAttr} />}
-                {typcategory === "N" && <Input type="number" {...inputAttr} />}
-                {typcategory === "D" && (
-                  <Input
-                    type="datetime-local"
-                    className="w-fit"
-                    {...inputAttr}
-                  />
-                )}
-                {typcategory === "B" && (
-                  <Switch
-                    {...inputAttr}
-                    checked={payload[column_name]}
-                    onChange={(e) => {
-                      setPayload((prev) => {
-                        return {
-                          ...prev,
-                          [column_name]: e.target.checked,
-                        };
-                      });
-                    }}
-                  />
-                )}
-              </Fragment>
+              <RowField
+                key={value.column_name}
+                columnInformation={value}
+                value={payload[value.column_name]}
+                onChangeValue={(v) => {
+                  setPayload((prev) => {
+                    return {
+                      ...prev,
+                      [value.column_name]: v,
+                    };
+                  });
+                }}
+              />
             );
           })}
         </div>

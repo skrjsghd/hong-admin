@@ -58,7 +58,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={loading || disabled}
         {...props}
       >
-        {loading ? <Loader /> : children}
+        {loading && <Loader className="inset-x absolute top-1/2 mx-auto" />}
+        {children}
       </Comp>
     );
   },

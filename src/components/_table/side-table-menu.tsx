@@ -1,14 +1,12 @@
 import { getAllTables } from "@/actions/query";
-import { SideTableListItem } from "@/components/_table/side-table-list-menu";
-import { Icon } from "@/components/ui";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
+import { SideTableListItem } from "./side-table-list-menu";
 
-export default async function TableSidebarPage({
-  params,
-}: {
-  params: { name: string };
-}) {
+type TableSidebarPageProps = {
+  tableName: string;
+};
+async function SideTableMenu({ tableName }: TableSidebarPageProps) {
   const session = await auth();
   const tableList = await getAllTables();
 
@@ -19,7 +17,7 @@ export default async function TableSidebarPage({
           <SideTableListItem
             key={table_name}
             tableName={table_name}
-            currentTable={params.name}
+            currentTable={tableName}
           />
         ))}
       </ul>
@@ -37,3 +35,5 @@ export default async function TableSidebarPage({
     </aside>
   );
 }
+
+export { SideTableMenu };

@@ -5,12 +5,14 @@ type ModalProps = {
   show: boolean;
   onClose: () => void;
   hideCloseButton?: boolean;
+  dismissable?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>;
 function Modal({
   show,
   children,
   onClose,
   hideCloseButton = false,
+  dismissable = false,
   className,
   ...props
 }: ModalProps) {
@@ -33,7 +35,7 @@ function Modal({
       </div>
       <div
         className="absolute left-0 top-0 -z-10 h-full w-full bg-black/80"
-        onClick={onClose}
+        onClick={dismissable ? onClose : undefined}
       ></div>
     </div>
   );
